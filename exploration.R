@@ -11,6 +11,7 @@ df <- aws.s3::s3read_using(FUN = read.csv,
                            object = "BDD_Label/Enquetes_AC.csv",
                            bucket = BUCKET,
                            opts = list("region" = ""))
+
 levels(df$initiative)
 df <- df %>% 
       mutate(avisConformite = case_match(statutEnquete,
@@ -23,7 +24,7 @@ x <- df %>% filter(is.na(commissionLabel))
 
 sum(x$avisConformite)
 
-enq <- enq <- aws.s3::s3read_using(
+enq <- aws.s3::s3read_using(
   FUN = read.csv,
   na.strings = c("", "NA"),
   object = "BDD_Label/Enquetes.csv",
@@ -32,8 +33,22 @@ enq <- enq <- aws.s3::s3read_using(
 
 y <- enq %>% filter(is.na(Avis.de.conformité))
 
-y1 <- y %>% filter(grepl("qualité statistique", Statut.de.l.enquête)) %>% select(ID,Title,Statut.de.l.enquête,Numéro.de.VISA)
-write.csv(y1[sample(1:nrow(y1),20),],"example1.csv",row.names=F)
+y1 <- y %>% filter(grepl("qualité statistique", Statut.de.l.enquête)) %>% select(ID,Title,Statut.de.l.enquête,Numéro.de.VISA,Services.producteurs)
+write.csv(y1,"example1.csv",row.names=F)
 
-y2 <-  y %>% filter(!grepl("qualité statistique", Statut.de.l.enquête)) %>% select(ID,Title,Statut.de.l.enquête,Numéro.de.VISA)
-write.csv(y2[sample(1:nrow(y2),20),],"example2.csv",row.names=F)
+y2 <-  y %>% filter(!grepl("qualité statistique", Statut.de.l.enquête)) %>% select(ID,Title,Statut.de.l.enquête,Numéro.de.VISA,Services.producteurs)
+write.csv(y2,"example2.csv",row.names=F)
+nrow(y2[is.na(y2$Statut.de.l.enquête),])
+
+
+ac <- aws.s3::s3read_using(
+  FUN = read.csv,
+  na.strings = c("", "NA"),
+  object = "BDD_Label/AC.csv",
+  bucket = BUCKET,
+  opts = list("region" = ""))
+ac <- ac %>% filter(Type.davis == "Avis de conformité")
+
+ac %>% filter(grepl("branche.+administration", Title)) %>% select(Title)
+ac %>% filter(grepl("Emploi",Title)) %>% select(Title)
+              

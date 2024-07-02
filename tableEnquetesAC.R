@@ -34,7 +34,8 @@ data <- data %>% mutate(dateCommissionAO = data_ao[.$ID.x == data_ao$ID.x,]$Date
 # On conserve uniquement les colonnes d'intérêt, modification noms colonnes
 
 data <- data %>% transmute(parutionJO = Paru.au.Journal.Officiel.du,
-                           titre = Title.x, statutEnquete = Statut.de.l.enquête,
+                           titre = Title.x, intitule = Intitulé.de.lenquête,
+                           statutEnquete = Statut.de.l.enquête,
                            numeroVISA = Numéro.de.VISA,
                            nouvelleEdition = Enquête.nouvelle.édition, initiative = Initiative,
                            contenuQuestionnaire = Contenu.du.questionnaire,
@@ -47,7 +48,6 @@ data <- data %>% transmute(parutionJO = Paru.au.Journal.Officiel.du,
                            #modeDeCollecte =  Mode.de.collecte,
                            serviceProducteurPrincipal =  Service.producteur.principal,
                            servicesProducteurs = Services.producteurs,
-                           titreAC = Title.y,
                            dateCommissionAC = Date.commission...formation,
                            dateDebutAC = Date.début.de.validité, dateFinAC = Date.fin.de.validité, 
                            commissionLabel = Commission.label, documentLabel = Document,
@@ -61,4 +61,3 @@ aws.s3::s3write_using(data,
                       object = "BDD_Label/Enquetes_AC.csv",
                       bucket = BUCKET,
                       opts = list("region" = ""))
-

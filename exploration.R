@@ -2,12 +2,11 @@ rm(list=ls())
 
 library(aws.s3)
 library(dplyr)
-library(xlsx)
-# 
+
 BUCKET <- "bbrunel"
 
 df <- aws.s3::s3read_using(FUN = read.csv,
-                           stringsAsFactors = T,
+                           #stringsAsFactors = T,
                            na.strings = c("","NA"),
                            object = "BDD_Label/Enquetes_AC.csv",
                            bucket = BUCKET,
@@ -66,14 +65,17 @@ t <- t %>% filter(!(intitule %in% z$intitule))
 t[t$documentLabel == "https://www.cnis.fr/wp-content/uploads/2022/01/AC_2021_Insee_RNIPP.pdf" & 
     !is.na(t$documentLabel),]$intitule <- "Bulletin d'état civil"
 
-t %>% 
-  aws.s3::s3write_using(
-    FUN = write.csv,
-    row.names = F,
-    object = 'activite_comite.csv',
-    bucket = BUCKET, 
-    opts = list("region" = ""))
+# t %>% 
+  # aws.s3::s3write_using(
+    # FUN = write.csv,
+    # row.names = F,
+    # object = 'activite_comite.csv',
+    # bucket = BUCKET, 
+    # opts = list("region" = ""))
 
-write_year(t, 2018:2024)
+# write_year(t, 2018:2024)
 
-# enq[enq$Avis.de.conformité %in% aoc[aoc$Document == "https://www.cnis.fr/wp-content/uploads/2020/11/AC_2020_SSP_prix_des_bois.pdf" & !is.na(aoc$Document),]$Slug,]$Intitulé.de.lenquête[i] <- "Enquête Prix des bois"
+t <- aws.s3::s3read_using(FUN = read.csv,
+                          object = 'activite_comite.csv',
+                          bucket = BUCKET,
+                          opts= list("region" = ""))

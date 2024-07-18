@@ -1,7 +1,8 @@
+rm(list = ls())
+
 library(dplyr)
 library(aws.s3)
 library(stringdist)
-library(collections)
 
 df <- aws.s3::s3read_using(FUN = read.csv,
                            object = "BDD_Label/Enquetes_triee.csv",
@@ -31,17 +32,17 @@ t <- data.frame(x = df[wi,]$intitule, y = df[wj,]$intitule, d = m[w], i = wi, j 
 t <- t %>% filter(i != j & d != 0) 
 View(data.frame("1" = 1:3))
 
-l <- list()
-
-for (i in 1:nrow(df)) {
-  l[[i]] <- which(m[i,] <= 20) %% 1457
-}
-
+## Star here
 
 compoConnexe <- function(L, s=1, explored = NULL) {
-  explored <- rep(F,length(L))
-  toExplore <- c(s)
+  if (is.null(explored))
+    explored <- rep(F,length(L))
+  toExplore <- c()
   conn <- c()
+  if (!explored[s]) {
+    toExplore <- c(s)
+    explored[s] <- T
+  }
   while (length(toExplore) != 0) {
     for (x in L[[toExplore[1]]]) {
       if (!explored[x]) {
@@ -55,5 +56,41 @@ compoConnexe <- function(L, s=1, explored = NULL) {
   return(list(conn,explored))
 }
 
-conn <- compoConnexe(l)
-View(df[conn,])
+titreSimilaires <- function(maxLV = 10) {
+  l <- list()
+  for (i in 1:nrow(df)) {
+    l[[i]] <- which(m[i,] <= maxLV) %% 1457
+  }
+  exp <- c()
+  compsConn <- list()
+  for (i in 1:nrow(df)) {
+    r <- compoConnexe(l,i,exp)
+    exp <- r[[2]]
+    if(!is.null(r[[1]]))
+      compsConn <- c(compsConn,list(r[[1]]))
+  }
+  return(compsConn)
+}
+
+lengths <- function(L) {
+  l <- c()
+  for (i in 1:length(L)) {
+    l <- c(l,length(L[[i]]))
+  }
+  return(list(mean = mean(l),sd = sd(l),max = max(l)))
+}
+
+i <- 10
+compsConn <- titreSimilaires(12)
+while(lengths(compsConn)$sd < 5) {
+  i <- i + 1
+  compsConn <- titreSimilaires(i)
+}
+lengths(compsConn)
+
+for (i in 1:length(compsConn)) {
+  write.csv(df[compsConn[[i]],] %>% select(intitule,annee),
+            "titre_sim.csv",
+            append = function(i) { i > 1}(i))
+}
+
